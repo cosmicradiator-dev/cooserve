@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sliders, Save, CheckCircle2, History, AlertCircle } from 'lucide-react';
+import { Sliders, Save, CheckCircle2, History, AlertCircle, ShieldAlert } from 'lucide-react';
 
 interface AuditEntry {
   id: string;
@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
     setSuccessMsg(null);
 
     try {
-      const res = await fetch('/api/v1/admin/cost-parameters', {
+      await fetch('/api/v1/admin/cost-parameters', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -80,150 +80,182 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-black text-slate-900 tracking-tight">Cost Engine Governance</h2>
-        <p className="text-xs text-text-muted">Live parameters applied immediately on subsequent quotes</p>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          Algorithmic Cost Engine Governance
+        </h1>
+        <p className="text-xs sm:text-sm text-text-muted mt-0.5">
+          Live parameters applied immediately on subsequent quotes across the entire marketplace.
+        </p>
       </div>
 
       {successMsg && (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold rounded-2xl flex items-center gap-2.5 shadow-sm">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
-      {/* Cost Parameter Grid */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
-        <div className="text-xs font-bold uppercase tracking-wider text-admin flex items-center gap-1.5">
-          <Sliders className="w-3.5 h-3.5" />
-          <span>Active Cost Variables</span>
+      {/* Cost Parameter Grid (2 columns on tablet/desktop) */}
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="text-xs font-bold uppercase tracking-wider text-admin flex items-center gap-2">
+            <Sliders className="w-4 h-4" />
+            <span>Active Cost Variables</span>
+          </div>
+          <span className="text-[11px] text-slate-400">Atomic database updates</span>
         </div>
 
-        {/* Base Fare */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-800">Base Fare (₹)</div>
-            <div className="text-[10px] text-text-muted">Minimum fixed charge per dispatch</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Base Fare */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <div>
+              <div className="text-sm font-bold text-slate-900">Base Fare (₹)</div>
+              <div className="text-xs text-text-muted mt-0.5">Minimum fixed charge per dispatch</div>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+              <span className="text-xs text-slate-500 font-medium">Value</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={baseFare}
+                  onChange={(e) => setBaseFare(Number(e.target.value))}
+                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                />
+                <button
+                  type="button"
+                  disabled={savingKey === 'base_fare'}
+                  onClick={() => handleUpdate('base_fare', baseFare)}
+                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  title="Save Base Fare"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={baseFare}
-              onChange={(e) => setBaseFare(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-xs font-mono text-right"
-            />
-            <button
-              type="button"
-              disabled={savingKey === 'base_fare'}
-              onClick={() => handleUpdate('base_fare', baseFare)}
-              className="p-1.5 rounded-lg bg-admin text-white hover:bg-admin-hover transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
 
-        {/* Per KM Rate */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-800">Per KM Rate (₹/km)</div>
-            <div className="text-[10px] text-text-muted">Travel allowance calculated via PostGIS</div>
+          {/* Per KM Rate */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <div>
+              <div className="text-sm font-bold text-slate-900">Per KM Rate (₹/km)</div>
+              <div className="text-xs text-text-muted mt-0.5">Travel allowance calculated via PostGIS distance</div>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+              <span className="text-xs text-slate-500 font-medium">Value</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={perKmRate}
+                  onChange={(e) => setPerKmRate(Number(e.target.value))}
+                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                />
+                <button
+                  type="button"
+                  disabled={savingKey === 'per_km_rate'}
+                  onClick={() => handleUpdate('per_km_rate', perKmRate)}
+                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  title="Save Per KM Rate"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={perKmRate}
-              onChange={(e) => setPerKmRate(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-xs font-mono text-right"
-            />
-            <button
-              type="button"
-              disabled={savingKey === 'per_km_rate'}
-              onClick={() => handleUpdate('per_km_rate', perKmRate)}
-              className="p-1.5 rounded-lg bg-admin text-white hover:bg-admin-hover transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
 
-        {/* Experience Multiplier */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-800">Experience Bonus (₹/yr)</div>
-            <div className="text-[10px] text-text-muted">Fair craft seniority compensation</div>
+          {/* Experience Multiplier */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <div>
+              <div className="text-sm font-bold text-slate-900">Experience Bonus (₹/yr)</div>
+              <div className="text-xs text-text-muted mt-0.5">Fair craft seniority compensation rate</div>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+              <span className="text-xs text-slate-500 font-medium">Value</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  value={experienceMultiplier}
+                  onChange={(e) => setExperienceMultiplier(Number(e.target.value))}
+                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                />
+                <button
+                  type="button"
+                  disabled={savingKey === 'experience_multiplier'}
+                  onClick={() => handleUpdate('experience_multiplier', experienceMultiplier)}
+                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  title="Save Experience Bonus"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={experienceMultiplier}
-              onChange={(e) => setExperienceMultiplier(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-xs font-mono text-right"
-            />
-            <button
-              type="button"
-              disabled={savingKey === 'experience_multiplier'}
-              onClick={() => handleUpdate('experience_multiplier', experienceMultiplier)}
-              className="p-1.5 rounded-lg bg-admin text-white hover:bg-admin-hover transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
 
-        {/* Urgency Multiplier */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-          <div>
-            <div className="text-xs font-bold text-slate-800">Urgency Multiplier (factor)</div>
-            <div className="text-[10px] text-text-muted">Surge multiplier for &lt;20 min dispatches</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              step="0.1"
-              value={urgencyMultiplier}
-              onChange={(e) => setUrgencyMultiplier(Number(e.target.value))}
-              className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-xs font-mono text-right"
-            />
-            <button
-              type="button"
-              disabled={savingKey === 'urgency_multiplier'}
-              onClick={() => handleUpdate('urgency_multiplier', urgencyMultiplier)}
-              className="p-1.5 rounded-lg bg-admin text-white hover:bg-admin-hover transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
-            </button>
+          {/* Urgency Multiplier */}
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+            <div>
+              <div className="text-sm font-bold text-slate-900">Urgency Multiplier (factor)</div>
+              <div className="text-xs text-text-muted mt-0.5">Surge factor for &lt;20 min emergency dispatches</div>
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+              <span className="text-xs text-slate-500 font-medium">Factor</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  step="0.1"
+                  value={urgencyMultiplier}
+                  onChange={(e) => setUrgencyMultiplier(Number(e.target.value))}
+                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                />
+                <button
+                  type="button"
+                  disabled={savingKey === 'urgency_multiplier'}
+                  onClick={() => handleUpdate('urgency_multiplier', urgencyMultiplier)}
+                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  title="Save Urgency Multiplier"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Enterprise Audit Log Viewer */}
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-          <History className="w-3.5 h-3.5" />
-          <span>Audit Log Trail ({auditLogs.length})</span>
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <History className="w-4 h-4 text-admin" />
+            <span>Tamper-Evident Audit Log Trail ({auditLogs.length})</span>
+          </div>
+          <span className="text-xs text-slate-400">Append-only compliance log</span>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {auditLogs.map((log) => (
             <div
               key={log.id}
-              className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm text-xs space-y-1"
+              className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm text-xs space-y-2"
             >
-              <div className="flex justify-between items-center">
-                <span className="font-mono font-bold text-slate-800 text-[11px] bg-slate-100 px-1.5 py-0.5 rounded">
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <span className="font-mono font-bold text-slate-900 text-xs bg-slate-200/80 px-2 py-0.5 rounded-lg">
                   {log.action}
                 </span>
-                <span className="text-[10px] text-text-muted">
-                  {new Date(log.created_at).toLocaleTimeString()}
+                <span className="text-[11px] text-text-muted">
+                  {new Date(log.created_at).toLocaleString()}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-600">
-                Target: <span className="font-semibold text-slate-800">{log.target_id}</span> • Actor: @{log.actor?.username || 'admin'}
+
+              <div className="text-slate-600">
+                Target Entity: <span className="font-bold text-slate-800">{log.target_id}</span> • Actor: @{log.actor?.username || 'admin'}
               </div>
-              <div className="font-mono text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 overflow-x-auto">
-                before: {JSON.stringify(log.before)} → after: {JSON.stringify(log.after)}
+
+              <div className="font-mono text-[11px] text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200 overflow-x-auto">
+                <span className="text-red-600">before: {JSON.stringify(log.before)}</span>
+                <span className="mx-2 text-slate-400">→</span>
+                <span className="text-emerald-700 font-semibold">after: {JSON.stringify(log.after)}</span>
               </div>
             </div>
           ))}
@@ -232,4 +264,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

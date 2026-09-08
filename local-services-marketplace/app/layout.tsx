@@ -1,11 +1,18 @@
 import React from 'react';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AspectShell } from '@/components/shell/AspectShell';
 
 export const metadata: Metadata = {
   title: 'Cooperative Gig Services Platform',
   description: 'Fair, transparent, cooperative gig marketplace for community services',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#0F766E',
 };
 
 export default function RootLayout({
@@ -15,10 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-      </head>
-      <body>
+      <body className="min-h-screen flex flex-col bg-bg text-text">
         <AspectShell>
           {children}
         </AspectShell>
@@ -26,4 +30,3 @@ export default function RootLayout({
     </html>
   );
 }
-

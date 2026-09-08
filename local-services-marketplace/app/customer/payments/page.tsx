@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CreditCard, CheckCircle2, AlertCircle, Shield, Receipt } from 'lucide-react';
+import { CreditCard, CheckCircle2, AlertCircle, Shield, Receipt, ArrowRight } from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -68,96 +68,109 @@ export default function CustomerPaymentsPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-black text-slate-900 tracking-tight">Payments & Checkout</h2>
-        <p className="text-xs text-text-muted">Razorpay Test Mode integration with idempotency</p>
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          Payments & Escrow Checkout
+        </h1>
+        <p className="text-xs sm:text-sm text-text-muted mt-0.5">
+          Razorpay test mode gateway integration with idempotency key protection.
+        </p>
       </div>
 
-      {/* Active Escrow / Checkout Card */}
-      <div className="p-4 rounded-2xl bg-white border border-amber-200 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-            <CreditCard className="w-4 h-4 text-secondary" />
-            <span>Pending Escrow Payout</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Active Escrow Checkout Card (5 cols on desktop) */}
+        <div className="lg:col-span-5 p-6 rounded-3xl bg-white border border-amber-200 shadow-sm space-y-4 lg:sticky lg:top-20">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+              <CreditCard className="w-4 h-4 text-secondary" />
+              <span>Pending Escrow Payout</span>
+            </div>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+              Ready for Settlement
+            </span>
           </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-            Ready for Payment
-          </span>
+
+          <div className="flex justify-between items-baseline pt-1">
+            <span className="text-xs text-text-muted">Total Payable Amount</span>
+            <span className="text-3xl font-black text-slate-900">₹245.00</span>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-text-muted space-y-1.5">
+            <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+              <Shield className="w-4 h-4 text-emerald-600" />
+              <span>Cooperative Escrow Guarantee</span>
+            </div>
+            <p className="leading-relaxed text-[11px]">
+              Your funds remain protected in escrow and are only credited to the worker's ledger upon verified completion of the service.
+            </p>
+            <div className="pt-1 text-[10px] text-slate-500 font-mono">
+              Test Card: <span className="bg-slate-200 px-1 py-0.5 rounded">4111 1111 1111 1111</span>
+            </div>
+          </div>
+
+          {paidSuccess && (
+            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Payment captured! Worker earnings ledger credited atomically.</span>
+            </div>
+          )}
+
+          <button
+            type="button"
+            disabled={paying}
+            onClick={handleTestCheckout}
+            className="w-full py-3 rounded-xl bg-secondary hover:bg-secondary-hover text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+          >
+            <CreditCard className="w-4 h-4" />
+            {paying ? 'Processing Razorpay Escrow...' : 'Pay ₹245.00 (Razorpay Test Mode)'}
+          </button>
         </div>
 
-        <div className="flex justify-between items-baseline pt-2 border-t border-slate-100">
-          <span className="text-xs text-text-muted">Total Payable</span>
-          <span className="text-2xl font-black text-slate-900">₹245.00</span>
-        </div>
-
-        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-text-muted space-y-1">
-          <div className="flex items-center gap-1 font-semibold text-slate-700">
-            <Shield className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Escrow Guarantee</span>
+        {/* Past Transactions Ledger (7 cols on desktop) */}
+        <div className="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-primary" />
+              <span>Past Transactions History</span>
+            </div>
+            <span className="text-xs text-slate-400">{transactions.length} record(s)</span>
           </div>
-          <p>
-            Funds are released to worker only upon verified job completion. Test card: <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-[10px]">4111 1111 1111 1111</code>
-          </p>
-        </div>
 
-        {paidSuccess && (
-          <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            Payment captured! Worker earnings ledger credited atomically.
-          </div>
-        )}
-
-        <button
-          type="button"
-          disabled={paying}
-          onClick={handleTestCheckout}
-          className="w-full py-2.5 rounded-xl bg-secondary hover:bg-secondary-hover text-white font-bold text-xs shadow-sm transition-colors flex items-center justify-center gap-2"
-        >
-          <CreditCard className="w-4 h-4" />
-          {paying ? 'Processing Razorpay Escrow...' : 'Pay ₹245.00 (Razorpay Test Mode)'}
-        </button>
-      </div>
-
-      {/* Past Transactions */}
-      <div>
-        <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <Receipt className="w-3.5 h-3.5" />
-          <span>Past Transactions</span>
-        </div>
-
-        {transactions.length === 0 ? (
-          <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center text-xs text-text-muted">
-            No transactions yet.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="font-bold text-slate-800 font-mono text-[11px]">
-                    {tx.gateway_ref}
+          {transactions.length === 0 ? (
+            <div className="p-12 text-center text-xs text-text-muted">
+              No transactions recorded yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                >
+                  <div>
+                    <div className="font-bold text-slate-800 font-mono text-xs sm:text-sm">
+                      {tx.gateway_ref}
+                    </div>
+                    <div className="text-[11px] text-text-muted mt-1 space-x-2">
+                      <span>{new Date(tx.created_at).toLocaleDateString()} at {new Date(tx.created_at).toLocaleTimeString()}</span>
+                      <span>•</span>
+                      <span className="font-mono text-[10px]">Idemp: {tx.idempotency_key.slice(0, 16)}...</span>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-text-muted mt-0.5">
-                    {new Date(tx.created_at).toLocaleDateString()} • Idemp: {tx.idempotency_key.slice(0, 14)}...
+
+                  <div className="sm:text-right flex sm:flex-col justify-between items-center sm:items-end">
+                    <div className="font-black text-slate-900 text-base">₹{Number(tx.amount).toFixed(2)}</div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full capitalize">
+                      <CheckCircle2 className="w-3 h-3" /> {tx.status}
+                    </span>
                   </div>
                 </div>
-
-                <div className="text-right">
-                  <div className="font-black text-slate-900 text-sm">₹{Number(tx.amount).toFixed(2)}</div>
-                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full capitalize">
-                    {tx.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
