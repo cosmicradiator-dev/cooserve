@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-typecheck-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: local-services-marketplace/package-lock.json
+
+      - name: Install dependencies
+        working-directory: local-services-marketplace
+        run: npm ci || npm install
+
+      - name: Lint
+        working-directory: local-services-marketplace
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: local-services-marketplace
+        run: npm run typecheck
+
+      - name: Unit Tests
+        working-directory: local-services-marketplace
+        run: npm run test:unit
+
+      - name: Integration Tests (Mocked / Staging Supabase)
+        working-directory: local-services-marketplace
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL || 'https://mock.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY || 'mock-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_ROLE_KEY || 'mock-service-key' }}
+        run: npm run test:integration
+
