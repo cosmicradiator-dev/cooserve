@@ -55,7 +55,7 @@ export class UserRepository {
   }): Promise<UserRow> {
     const { data, error } = await this.client
       .from('users')
-      .insert(user)
+      .upsert(user)
       .select()
       .single();
 

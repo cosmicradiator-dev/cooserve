@@ -37,11 +37,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError || !authData.user) {
+      const isRateLimit =
+        authError?.code === 'over_email_send_rate_limit' ||
+        authError?.message?.toLowerCase().includes('rate limit');
+
+      const message = isRateLimit
+        ? 'Supabase email rate limit reached on free tier. Please wait a few minutes or log in with an existing account.'
+        : (authError?.message || 'Failed to create user account with Supabase Auth');
+
       return NextResponse.json(
         {
           error: {
             code: authError?.code || 'SIGNUP_ERROR',
-            message: authError?.message || 'Failed to create user account with Supabase Auth',
+            message,
           },
         },
         { status: authError?.status || 400 }
@@ -56,7 +64,12 @@ export async function POST(request: NextRequest) {
       user = await userService.registerUser(authUserId, validated);
     } catch (profileErr: any) {
       // If profile already created by database trigger handle_new_user, that's expected
-      if (profileErr?.message?.includes('already exists') || profileErr?.code === '23505') {
+      if (
+        profileErr?.message?.includes('already') ||
+        profileErr?.message?.includes('unique') ||
+        profileErr?.message?.includes('duplicate') ||
+        profileErr?.code === '23505'
+      ) {
         user = {
           id: authUserId,
           role: validated.role,

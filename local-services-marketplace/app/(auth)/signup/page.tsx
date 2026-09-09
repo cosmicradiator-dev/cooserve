@@ -45,10 +45,16 @@ export default function SignupPage() {
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error(text.slice(0, 150) || `Server error (${res.status})`);
+      }
 
-      if (!res.ok || json.error) {
-        throw new Error(json.error?.message || 'Signup failed');
+      if (!res.ok || json?.error) {
+        throw new Error(json?.error?.message || 'Signup failed');
       }
 
       // Set session cookies

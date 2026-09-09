@@ -44,10 +44,16 @@ function LoginForm() {
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
-      const json = await res.json();
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        throw new Error(text.slice(0, 150) || `Server error (${res.status})`);
+      }
 
-      if (!res.ok || json.error) {
-        throw new Error(json.error?.message || 'Invalid email or password credentials');
+      if (!res.ok || json?.error) {
+        throw new Error(json?.error?.message || 'Invalid email or password credentials');
       }
 
       const role = json.data?.user?.role || 'customer';

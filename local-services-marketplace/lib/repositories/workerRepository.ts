@@ -51,7 +51,7 @@ export class WorkerRepository {
   }): Promise<WorkerProfileRow> {
     const { data, error } = await this.client
       .from('worker_profiles')
-      .insert({
+      .upsert({
         ...profile,
         verification_status: 'pending',
         rating_avg: 5.0,

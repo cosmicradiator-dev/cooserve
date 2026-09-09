@@ -17,7 +17,18 @@ export class UserService {
     // Check username uniqueness
     const existing = await userRepository.findByUsername(input.username);
     if (existing) {
-      throw new ConflictError(`Username '${input.username}' is already taken`);
+      if (existing.id !== authUserId) {
+        throw new ConflictError(`Username '${input.username}' is already taken`);
+      }
+      // If user row was pre-created by the database trigger (handle_new_user)
+      if (input.role === 'worker') {
+        await workerRepository.createProfile({
+          user_id: authUserId,
+          skill_type: input.skillType || 'general_service',
+          experience_years: input.experienceYears || 1,
+        });
+      }
+      return existing;
     }
 
     // Create user in public.users

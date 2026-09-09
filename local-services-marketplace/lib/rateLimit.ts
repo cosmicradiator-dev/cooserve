@@ -4,7 +4,9 @@ import { logger } from './logger';
 
 const isRedisConfigured =
   Boolean(process.env.UPSTASH_REDIS_REST_URL) &&
-  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
+  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN) &&
+  !process.env.UPSTASH_REDIS_REST_URL?.includes('your-upstash') &&
+  !process.env.UPSTASH_REDIS_REST_TOKEN?.includes('your-upstash');
 
 let redis: Redis | null = null;
 if (isRedisConfigured) {
@@ -18,7 +20,7 @@ if (isRedisConfigured) {
   }
 }
 
-// In-memory fallback for local dev & testing when Upstash is unconfigured
+// In-memory fallback for local dev & testing when Upstash is unconfigured or unavailable
 const inMemoryCache = new Map<string, { count: number; expiresAt: number }>();
 
 class FallbackLimiter {
@@ -42,23 +44,56 @@ class FallbackLimiter {
   }
 }
 
-export const authRateLimiter = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, '1 m'),
-      prefix: 'ratelimit:auth',
-      analytics: true,
-    })
-  : new FallbackLimiter(20, 60 * 1000);
+class ResilientLimiter {
+  private fallback: FallbackLimiter;
 
-export const apiRateLimiter = redis
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(100, '1 m'),
-      prefix: 'ratelimit:api',
-      analytics: true,
-    })
-  : new FallbackLimiter(100, 60 * 1000);
+  constructor(
+    private upstashLimiter: Ratelimit | null,
+    maxRequests: number,
+    windowMs: number
+  ) {
+    this.fallback = new FallbackLimiter(maxRequests, windowMs);
+  }
+
+  async limit(identifier: string) {
+    if (this.upstashLimiter) {
+      try {
+        return await this.upstashLimiter.limit(identifier);
+      } catch (err) {
+        logger.warn({
+          msg: 'Upstash rate limiter unreachable, using in-memory fallback',
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+    return this.fallback.limit(identifier);
+  }
+}
+
+export const authRateLimiter = new ResilientLimiter(
+  redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(20, '1 m'),
+        prefix: 'ratelimit:auth',
+        analytics: true,
+      })
+    : null,
+  20,
+  60 * 1000
+);
+
+export const apiRateLimiter = new ResilientLimiter(
+  redis
+    ? new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(100, '1 m'),
+        prefix: 'ratelimit:api',
+        analytics: true,
+      })
+    : null,
+  100,
+  60 * 1000
+);
 
 export { redis };
-

@@ -7,11 +7,17 @@ if (typeof window !== 'undefined') {
 
 export function createServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const serviceRoleKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    'placeholder-key';
+  const rawServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const isPlaceholderServiceKey =
+    !rawServiceKey ||
+    rawServiceKey.includes('your-supabase') ||
+    rawServiceKey === 'placeholder-key';
+
+  const serviceRoleKey = !isPlaceholderServiceKey
+    ? rawServiceKey
+    : (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+       'placeholder-key');
 
   return createSupabaseClient(supabaseUrl, serviceRoleKey, {
     auth: {
