@@ -98,7 +98,7 @@ export default function CustomerRequestPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
           Request Cooperative Service
         </h1>
         <p className="text-xs sm:text-sm text-text-muted mt-0.5">
@@ -107,37 +107,37 @@ export default function CustomerRequestPage() {
       </div>
 
       {createdJob ? (
-        <div className="max-w-2xl mx-auto p-6 sm:p-8 rounded-3xl bg-white border border-emerald-200 shadow-lg space-y-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-            <CheckCircle2 className="w-8 h-8" />
+        <div className="max-w-2xl mx-auto p-6 sm:p-8 rounded-md bg-white border border-slate-200 space-y-6 text-center">
+          <div className="w-12 h-12 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
 
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Work Request Dispatched!</h2>
-            <p className="text-xs sm:text-sm text-text-muted mt-1.5 max-w-md mx-auto">
+            <h2 className="text-lg font-semibold text-slate-900">Work Request Dispatched</h2>
+            <p className="text-xs sm:text-sm text-text-muted mt-1 max-w-md mx-auto">
               Your task has been sent to nearby verified cooperative technicians with zero platform commission.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl text-left text-xs sm:text-sm space-y-2 border border-slate-200/80 max-w-md mx-auto">
+          <div className="p-4 bg-slate-50 rounded-md text-left text-xs sm:text-sm space-y-2 border border-slate-200 max-w-md mx-auto">
             <div className="flex justify-between items-center">
               <span className="text-text-muted">Requested Service:</span>
-              <span className="font-bold text-slate-800 capitalize">{createdJob.service_type}</span>
+              <span className="font-medium text-slate-900 capitalize">{createdJob.service_type}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-text-muted">Estimated Base Distance:</span>
-              <span className="font-semibold text-slate-700">~2.4 km</span>
+              <span className="font-medium text-slate-700">~2.4 km</span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
               <span className="font-medium text-text-muted">Locked Transparent Fare:</span>
-              <span className="text-base font-black text-emerald-700">₹{createdJob.quoted_amount}</span>
+              <span className="text-base font-bold font-mono text-emerald-700">₹{createdJob.quoted_amount}</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={() => router.push('/customer/payments')}
-            className="w-full max-w-md mx-auto py-3 rounded-xl bg-secondary hover:bg-secondary-hover text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+            className="w-full max-w-md mx-auto py-2.5 rounded-md bg-primary hover:bg-primary-hover text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2"
           >
             <span>Proceed to Escrow Checkout</span>
             <ArrowRight className="w-4 h-4" />
@@ -148,23 +148,23 @@ export default function CustomerRequestPage() {
           {/* Main Form Column (7 cols on desktop) */}
           <form
             onSubmit={handleSubmit}
-            className="lg:col-span-7 bg-white p-5 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4"
+            className="lg:col-span-7 bg-white p-5 sm:p-6 rounded-md border border-slate-200 space-y-4"
           >
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-800">Job Specifications</h2>
+            <div className="border-b border-slate-200 pb-3">
+              <h2 className="text-sm font-semibold text-slate-900">Job Specifications</h2>
               <p className="text-[11px] text-text-muted">Enter details for the matching technician</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Service Dropdown */}
               <div>
-                <label className="block text-[11px] font-bold uppercase text-text-muted mb-1">
+                <label className="block text-[11px] font-medium uppercase text-text-muted mb-1">
                   Service Craft
                 </label>
                 <select
                   value={serviceType}
                   onChange={(e) => setServiceType(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-secondary font-medium transition-colors"
+                  className="w-full px-3 py-2 rounded-md border border-slate-300 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-normal transition-colors"
                 >
                   <option value="electrician">Electrician (Wiring, Fuse, Inverters)</option>
                   <option value="plumber">Plumber (Pipes, Taps, Leakages)</option>
@@ -176,13 +176,13 @@ export default function CustomerRequestPage() {
 
               {/* Worker Type Requested */}
               <div>
-                <label className="block text-[11px] font-bold uppercase text-text-muted mb-1">
+                <label className="block text-[11px] font-medium uppercase text-text-muted mb-1">
                   Provider Tier
                 </label>
                 <select
                   value={workerTypeRequested}
                   onChange={(e) => setWorkerTypeRequested(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-secondary font-medium transition-colors"
+                  className="w-full px-3 py-2 rounded-md border border-slate-300 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-normal transition-colors"
                 >
                   <option value="Master Electrician">Master Specialist (5+ yrs verified)</option>
                   <option value="Certified Journeyman">Certified Journeyman</option>
@@ -193,7 +193,7 @@ export default function CustomerRequestPage() {
 
             {/* Issue Description */}
             <div>
-              <label className="block text-[11px] font-bold uppercase text-text-muted mb-1">
+              <label className="block text-[11px] font-medium uppercase text-text-muted mb-1">
                 Describe the Problem & Requirements
               </label>
               <textarea
@@ -202,26 +202,26 @@ export default function CustomerRequestPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g. Master circuit breaker trips whenever the AC turns on. Need MCB inspection and load testing."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 bg-slate-50 focus:bg-white focus:outline-none focus:border-secondary placeholder:text-slate-400 transition-colors"
+                className="w-full px-3 py-2 rounded-md border border-slate-300 text-xs sm:text-sm text-slate-800 bg-white focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 placeholder:text-slate-400 transition-colors"
               />
             </div>
 
             {/* Urgency Toggle */}
-            <label className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 cursor-pointer hover:bg-amber-50 transition-colors">
+            <label className="flex items-center justify-between p-3.5 rounded-md bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-colors">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 shrink-0">
-                  <Zap className={`w-4 h-4 ${isUrgent ? 'text-amber-600 fill-amber-500' : 'text-slate-400'}`} />
+                <div className="p-1.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700 shrink-0">
+                  <Zap className={`w-4 h-4 ${isUrgent ? 'text-amber-700 fill-amber-500' : 'text-slate-400'}`} />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-900">Priority Emergency Dispatch</div>
-                  <div className="text-[10px] text-text-muted">Dispatches within 20 mins (1.5x surge rate for worker)</div>
+                  <div className="text-xs font-medium text-slate-900">Priority Emergency Dispatch</div>
+                  <div className="text-[11px] text-text-muted">Dispatches within 20 mins (1.5x surge rate for worker)</div>
                 </div>
               </div>
               <input
                 type="checkbox"
                 checked={isUrgent}
                 onChange={(e) => setIsUrgent(e.target.checked)}
-                className="w-4 h-4 accent-secondary rounded cursor-pointer"
+                className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
               />
             </label>
 
@@ -229,7 +229,7 @@ export default function CustomerRequestPage() {
             <button
               type="submit"
               disabled={submitting || !description.trim()}
-              className="w-full py-3 rounded-xl bg-secondary hover:bg-secondary-hover disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+              className="w-full py-2.5 rounded-md bg-primary hover:bg-primary-hover disabled:bg-slate-100 disabled:text-slate-400 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors"
             >
               <Send className="w-4 h-4" /> {submitting ? 'Dispatching to Nearest Worker...' : 'Dispatch Request Now'}
             </button>
@@ -241,38 +241,38 @@ export default function CustomerRequestPage() {
             <NearbyWorkersBadge lat={lat} lng={lng} radiusKm={10} skillType={serviceType} />
 
             {/* Live Quote Card */}
-            <div className="p-5 rounded-3xl bg-slate-900 text-white shadow-xl border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="p-5 rounded-md bg-white text-slate-900 border border-slate-200 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <Calculator className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  <Calculator className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                     Transparent Live Quote
                   </span>
                 </div>
-                <span className="text-[10px] text-amber-400/90 font-mono bg-amber-500/10 px-2 py-0.5 rounded">
+                <span className="text-[10px] text-primary font-mono bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
                   Zero Take-Rate
                 </span>
               </div>
 
               <div className="flex items-baseline justify-between">
                 <div>
-                  <div className="text-3xl font-black text-amber-400 font-mono">
+                  <div className="text-3xl font-bold text-slate-900 font-mono tracking-tight">
                     {calculating ? '...' : `₹${liveQuote}`}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">Fixed guaranteed price</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Fixed guaranteed price</div>
                 </div>
-                <div className="text-right text-[11px] text-slate-400 space-y-0.5">
+                <div className="text-right text-[11px] text-slate-500 space-y-0.5">
                   <div>Base Fare: ₹100</div>
                   <div>Travel allowance: ₹60</div>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-800/80 rounded-xl text-[11px] text-slate-300 space-y-1.5 border border-slate-700/60">
-                <div className="flex items-center gap-1.5 font-semibold text-teal-400">
-                  <Shield className="w-3.5 h-3.5" />
+              <div className="p-3 bg-slate-50 rounded-md text-[11px] text-slate-600 space-y-1.5 border border-slate-200">
+                <div className="flex items-center gap-1.5 font-medium text-slate-800">
+                  <Shield className="w-3.5 h-3.5 text-primary" />
                   <span>Fair Trade Cooperative Promise</span>
                 </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed">
+                <p className="text-[10px] text-slate-500 leading-relaxed">
                   Unlike traditional aggregator apps charging 25-30% commissions, this entire quote goes directly into the worker's earnings escrow upon job sign-off.
                 </p>
               </div>

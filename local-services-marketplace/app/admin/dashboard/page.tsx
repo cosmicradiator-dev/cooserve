@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
           Algorithmic Cost Engine Governance
         </h1>
         <p className="text-xs sm:text-sm text-text-muted mt-0.5">
@@ -91,16 +91,16 @@ export default function AdminDashboardPage() {
       </div>
 
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold rounded-2xl flex items-center gap-2.5 shadow-sm">
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-medium rounded-md flex items-center gap-2.5">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {/* Cost Parameter Grid (2 columns on tablet/desktop) */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div className="text-xs font-bold uppercase tracking-wider text-admin flex items-center gap-2">
+      <div className="bg-white rounded-md border border-slate-200 p-5 sm:p-6 space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div className="text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-2">
             <Sliders className="w-4 h-4" />
             <span>Active Cost Variables</span>
           </div>
@@ -109,25 +109,25 @@ export default function AdminDashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Base Fare */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+          <div className="p-4 rounded-md bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-slate-900">Base Fare (₹)</div>
+              <div className="text-sm font-semibold text-slate-900">Base Fare (₹)</div>
               <div className="text-xs text-text-muted mt-0.5">Minimum fixed charge per dispatch</div>
             </div>
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <span className="text-xs text-slate-500 font-medium">Value</span>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={baseFare}
                   onChange={(e) => setBaseFare(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                  className="w-24 px-2.5 py-1.5 rounded-md border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-semibold bg-white"
                 />
                 <button
                   type="button"
                   disabled={savingKey === 'base_fare'}
                   onClick={() => handleUpdate('base_fare', baseFare)}
-                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  className="p-1.5 rounded-md bg-primary text-white hover:bg-primary-hover transition-colors"
                   title="Save Base Fare"
                 >
                   <Save className="w-4 h-4" />
@@ -137,25 +137,25 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Per KM Rate */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+          <div className="p-4 rounded-md bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-slate-900">Per KM Rate (₹/km)</div>
+              <div className="text-sm font-semibold text-slate-900">Per KM Rate (₹/km)</div>
               <div className="text-xs text-text-muted mt-0.5">Travel allowance calculated via PostGIS distance</div>
             </div>
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <span className="text-xs text-slate-500 font-medium">Value</span>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={perKmRate}
                   onChange={(e) => setPerKmRate(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                  className="w-24 px-2.5 py-1.5 rounded-md border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-semibold bg-white"
                 />
                 <button
                   type="button"
                   disabled={savingKey === 'per_km_rate'}
                   onClick={() => handleUpdate('per_km_rate', perKmRate)}
-                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  className="p-1.5 rounded-md bg-primary text-white hover:bg-primary-hover transition-colors"
                   title="Save Per KM Rate"
                 >
                   <Save className="w-4 h-4" />
@@ -165,25 +165,25 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Experience Multiplier */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+          <div className="p-4 rounded-md bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-slate-900">Experience Bonus (₹/yr)</div>
+              <div className="text-sm font-semibold text-slate-900">Experience Bonus (₹/yr)</div>
               <div className="text-xs text-text-muted mt-0.5">Fair craft seniority compensation rate</div>
             </div>
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <span className="text-xs text-slate-500 font-medium">Value</span>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={experienceMultiplier}
                   onChange={(e) => setExperienceMultiplier(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                  className="w-24 px-2.5 py-1.5 rounded-md border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-semibold bg-white"
                 />
                 <button
                   type="button"
                   disabled={savingKey === 'experience_multiplier'}
                   onClick={() => handleUpdate('experience_multiplier', experienceMultiplier)}
-                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  className="p-1.5 rounded-md bg-primary text-white hover:bg-primary-hover transition-colors"
                   title="Save Experience Bonus"
                 >
                   <Save className="w-4 h-4" />
@@ -193,12 +193,12 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Urgency Multiplier */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-3">
+          <div className="p-4 rounded-md bg-slate-50 border border-slate-200 flex flex-col justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-slate-900">Urgency Multiplier (factor)</div>
+              <div className="text-sm font-semibold text-slate-900">Urgency Multiplier (factor)</div>
               <div className="text-xs text-text-muted mt-0.5">Surge factor for &lt;20 min emergency dispatches</div>
             </div>
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <span className="text-xs text-slate-500 font-medium">Factor</span>
               <div className="flex items-center gap-2">
                 <input
@@ -206,13 +206,13 @@ export default function AdminDashboardPage() {
                   step="0.1"
                   value={urgencyMultiplier}
                   onChange={(e) => setUrgencyMultiplier(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-admin font-bold"
+                  className="w-24 px-2.5 py-1.5 rounded-md border border-slate-300 text-xs font-mono text-right focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-semibold bg-white"
                 />
                 <button
                   type="button"
                   disabled={savingKey === 'urgency_multiplier'}
                   onClick={() => handleUpdate('urgency_multiplier', urgencyMultiplier)}
-                  className="p-2 rounded-xl bg-admin text-white hover:bg-admin-hover transition-colors shadow-sm"
+                  className="p-1.5 rounded-md bg-primary text-white hover:bg-primary-hover transition-colors"
                   title="Save Urgency Multiplier"
                 >
                   <Save className="w-4 h-4" />
@@ -224,10 +224,10 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Enterprise Audit Log Viewer */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-            <History className="w-4 h-4 text-admin" />
+      <div className="bg-white rounded-md border border-slate-200 p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <History className="w-4 h-4 text-primary" />
             <span>Tamper-Evident Audit Log Trail ({auditLogs.length})</span>
           </div>
           <span className="text-xs text-slate-400">Append-only compliance log</span>
@@ -237,10 +237,10 @@ export default function AdminDashboardPage() {
           {auditLogs.map((log) => (
             <div
               key={log.id}
-              className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm text-xs space-y-2"
+              className="p-3.5 rounded-md bg-slate-50 border border-slate-200 text-xs space-y-2"
             >
               <div className="flex flex-wrap justify-between items-center gap-2">
-                <span className="font-mono font-bold text-slate-900 text-xs bg-slate-200/80 px-2 py-0.5 rounded-lg">
+                <span className="font-mono font-medium text-slate-900 text-xs bg-slate-200/80 px-2 py-0.5 rounded">
                   {log.action}
                 </span>
                 <span className="text-[11px] text-text-muted">
@@ -249,10 +249,10 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="text-slate-600">
-                Target Entity: <span className="font-bold text-slate-800">{log.target_id}</span> • Actor: @{log.actor?.username || 'admin'}
+                Target Entity: <span className="font-medium text-slate-800">{log.target_id}</span> • Actor: @{log.actor?.username || 'admin'}
               </div>
 
-              <div className="font-mono text-[11px] text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200 overflow-x-auto">
+              <div className="font-mono text-[11px] text-slate-700 bg-white p-2 rounded-md border border-slate-200 overflow-x-auto">
                 <span className="text-red-600">before: {JSON.stringify(log.before)}</span>
                 <span className="mx-2 text-slate-400">→</span>
                 <span className="text-emerald-700 font-semibold">after: {JSON.stringify(log.after)}</span>

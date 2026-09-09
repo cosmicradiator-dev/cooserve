@@ -75,21 +75,21 @@ export function NearbyWorkersBadge({
   }, [lat, lng, radiusKm, skillType]);
 
   return (
-    <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-xl p-3 shadow-sm text-xs">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-primary">
-          <ShieldCheck className="w-5 h-5 text-primary" />
+    <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-md p-3 text-xs">
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-md bg-blue-50 border border-blue-200 flex items-center justify-center text-primary shrink-0">
+          <ShieldCheck className="w-4 h-4 text-primary stroke-[1.75]" />
         </div>
         <div>
-          <div className="flex items-center gap-1.5 font-bold text-slate-900">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-900">
             <span>Verified Cooperative Network</span>
             {isLive && (
-              <span className="flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full font-semibold animate-pulse">
+              <span className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-medium">
                 <Radio className="w-3 h-3" /> Live
               </span>
             )}
           </div>
-          <p className="text-text-muted mt-0.5">
+          <p className="text-slate-600 mt-0.5 text-xs">
             {loading ? (
               'Locating active providers...'
             ) : (

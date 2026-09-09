@@ -3,8 +3,39 @@
 -- Includes test admin, workers, customers, locations, and cost parameters
 -- ============================================================================
 
--- Ensure PostGIS is enabled
+-- Ensure PostGIS & PGCrypto are enabled
 create extension if not exists postgis;
+create extension if not exists pgcrypto;
+
+-- 0. Ensure Audit Trigger is updated with JSONB safety before inserting into cost_parameters
+create or replace function audit_trigger_func()
+returns trigger as $$
+declare
+  actor_user_id uuid;
+begin
+  begin
+    actor_user_id := auth.uid();
+  exception
+    when others then
+      actor_user_id := null;
+  end;
+
+  if (tg_op = 'UPDATE') then
+    insert into audit_log (actor_id, action, target_table, target_id, before, after)
+    values (actor_user_id, tg_table_name || '.update', tg_table_name, coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'), to_jsonb(old), to_jsonb(new));
+    return new;
+  elsif (tg_op = 'DELETE') then
+    insert into audit_log (actor_id, action, target_table, target_id, before, after)
+    values (actor_user_id, tg_table_name || '.delete', tg_table_name, coalesce(to_jsonb(old) ->> 'id', to_jsonb(old) ->> 'key', to_jsonb(old) ->> 'user_id', 'unknown'), to_jsonb(old), null);
+    return old;
+  elsif (tg_op = 'INSERT') then
+    insert into audit_log (actor_id, action, target_table, target_id, before, after)
+    values (actor_user_id, tg_table_name || '.insert', tg_table_name, coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'), null, to_jsonb(new));
+    return new;
+  end if;
+  return null;
+end;
+$$ language plpgsql security definer;
 
 -- 1. Seed Cost Parameters
 insert into cost_parameters (key, value) values
@@ -15,9 +46,23 @@ insert into cost_parameters (key, value) values
   ('service_type_default_multiplier', 1.0)
 on conflict (key) do update set value = excluded.value;
 
--- 2. Mock Admin User Seed (Simulating Auth user row)
--- Note: In production Supabase, users are first inserted into auth.users.
--- This script creates corresponding public.users rows with predefined UUIDs for local dev & testing.
+-- 2. Mock Admin & User Seed with bcrypt-hashed passwords (Password123!)
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema = 'auth' and table_name = 'users') then
+    insert into auth.users (
+      id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data
+    ) values
+      ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@coop.org', crypt('Password123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"role":"admin","full_name":"Platform Super Admin"}'),
+      ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'ramesh@coop.org', crypt('Password123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"role":"worker","full_name":"Ramesh Sharma"}'),
+      ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'sunita@coop.org', crypt('Password123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"role":"worker","full_name":"Sunita Devi"}'),
+      ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'amit@coop.org', crypt('Password123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"role":"worker","full_name":"Amit Patel"}'),
+      ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'priya@mail.com', crypt('Password123!', gen_salt('bf')), now(), now(), now(), '{"provider":"email","providers":["email"]}', '{"role":"customer","full_name":"Priya Verma"}')
+    on conflict (id) do update set
+      encrypted_password = crypt('Password123!', gen_salt('bf')),
+      email_confirmed_at = now();
+  end if;
+end $$;
 
 insert into users (id, role, full_name, username, phone, address) values
   ('00000000-0000-0000-0000-000000000001', 'admin', 'Platform Super Admin', 'admin', '+18005550100', '100 Coop Plaza, Metro City'),
@@ -47,17 +92,7 @@ on conflict (worker_id) do update set
 
 -- 5. Seed Sample Completed Job and Earning
 insert into service_requests (
-  id,
-  customer_id,
-  worker_id,
-  service_type,
-  worker_type_requested,
-  description,
-  location,
-  status,
-  briefing,
-  quoted_amount,
-  created_at
+  id, customer_id, worker_id, service_type, worker_type_requested, description, location, status, briefing, quoted_amount, created_at
 ) values (
   '10000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000005',
@@ -73,11 +108,7 @@ insert into service_requests (
 ) on conflict (id) do nothing;
 
 insert into earnings (
-  id,
-  worker_id,
-  job_id,
-  amount,
-  earned_at
+  id, worker_id, job_id, amount, earned_at
 ) values (
   '20000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000002',
@@ -87,14 +118,7 @@ insert into earnings (
 ) on conflict (id) do nothing;
 
 insert into transactions (
-  id,
-  customer_id,
-  job_id,
-  amount,
-  gateway_ref,
-  idempotency_key,
-  status,
-  created_at
+  id, customer_id, job_id, amount, gateway_ref, idempotency_key, status, created_at
 ) values (
   '30000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000005',
@@ -105,4 +129,40 @@ insert into transactions (
   'paid',
   now() - interval '2 days'
 ) on conflict (id) do nothing;
+
+-- 6. Automated Synchronization Trigger from Supabase Auth
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.users (id, role, full_name, username, phone, address)
+  values (
+    new.id,
+    coalesce((new.raw_user_meta_data->>'role')::user_role, 'customer'::user_role),
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    new.raw_user_meta_data->>'phone',
+    new.raw_user_meta_data->>'address'
+  )
+  on conflict (id) do update set
+    role = excluded.role,
+    full_name = excluded.full_name;
+
+  if (coalesce(new.raw_user_meta_data->>'role', '') = 'worker') then
+    insert into public.worker_profiles (user_id, skill_type, experience_years)
+    values (
+      new.id,
+      coalesce(new.raw_user_meta_data->>'skill_type', 'electrician'),
+      coalesce((new.raw_user_meta_data->>'experience_years')::numeric, 1)
+    )
+    on conflict (user_id) do nothing;
+  end if;
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
 

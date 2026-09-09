@@ -54,7 +54,7 @@ const LeafletMap = dynamic(
           center={[lat, lng]}
           zoom={13}
           scrollWheelZoom={false}
-          className="w-full h-full rounded-2xl z-0"
+          className="w-full h-full rounded-md z-0"
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -65,7 +65,7 @@ const LeafletMap = dynamic(
             <Circle
               center={[lat, lng]}
               radius={radiusKm * 1000}
-              pathOptions={{ color: '#0F766E', fillColor: '#0F766E', fillOpacity: 0.2 }}
+              pathOptions={{ color: '#1D4ED8', fillColor: '#1D4ED8', fillOpacity: 0.15 }}
             />
           )}
           <MapClickHandler onPick={onPick} />
@@ -76,7 +76,7 @@ const LeafletMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-2xl text-text-muted text-sm animate-pulse min-h-[250px]">
+      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-md text-text-muted text-sm min-h-[250px]">
         Loading OpenStreetMap engine...
       </div>
     ),
@@ -108,7 +108,7 @@ export function LocationPicker({
 
   return (
     <div className="w-full flex flex-col gap-4">
-      <div className={`w-full ${mapHeightClassName} relative rounded-2xl border border-slate-200 overflow-hidden shadow-inner`}>
+      <div className={`w-full ${mapHeightClassName} relative rounded-md border border-slate-200 overflow-hidden`}>
         <LeafletMap
           lat={lat}
           lng={lng}
@@ -118,19 +118,19 @@ export function LocationPicker({
         />
       </div>
 
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-xs sm:text-sm space-y-3">
+      <div className="bg-white p-4 rounded-md border border-slate-200 text-xs sm:text-sm space-y-3">
         <div className="flex justify-between items-center font-medium">
           <span className="text-text-muted">Selected GPS Point:</span>
-          <span className="font-mono text-slate-900 font-bold bg-slate-100 px-2 py-0.5 rounded">
+          <span className="font-mono text-slate-900 font-semibold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
             {lat.toFixed(4)}, {lng.toFixed(4)}
           </span>
         </div>
 
         {showRadius && (
-          <div className="pt-2 border-t border-slate-100">
+          <div className="pt-2 border-t border-slate-200">
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-text-muted font-medium">Geofence Dispatch Radius:</span>
-              <span className="font-bold text-primary text-sm font-mono">{radiusKm} km</span>
+              <span className="font-semibold text-primary text-sm font-mono">{radiusKm} km</span>
             </div>
             <input
               type="range"
@@ -141,7 +141,7 @@ export function LocationPicker({
               onChange={(e) => handleRadiusChange(Number(e.target.value))}
               className="w-full accent-primary cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+            <div className="flex justify-between text-[10px] text-slate-500 mt-1">
               <span>1 km (Neighborhood)</span>
               <span>12 km (Suburban)</span>
               <span>25 km (Metro)</span>

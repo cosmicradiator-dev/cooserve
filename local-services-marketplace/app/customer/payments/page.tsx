@@ -70,7 +70,7 @@ export default function CustomerPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
           Payments & Escrow Checkout
         </h1>
         <p className="text-xs sm:text-sm text-text-muted mt-0.5">
@@ -80,37 +80,37 @@ export default function CustomerPaymentsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Active Escrow Checkout Card (5 cols on desktop) */}
-        <div className="lg:col-span-5 p-6 rounded-3xl bg-white border border-amber-200 shadow-sm space-y-4 lg:sticky lg:top-20">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-              <CreditCard className="w-4 h-4 text-secondary" />
+        <div className="lg:col-span-5 p-5 sm:p-6 rounded-md bg-white border border-slate-200 space-y-4 lg:sticky lg:top-20">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+              <CreditCard className="w-4 h-4 text-primary" />
               <span>Pending Escrow Payout</span>
             </div>
-            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-primary">
               Ready for Settlement
             </span>
           </div>
 
           <div className="flex justify-between items-baseline pt-1">
             <span className="text-xs text-text-muted">Total Payable Amount</span>
-            <span className="text-3xl font-black text-slate-900">₹245.00</span>
+            <span className="text-3xl font-bold font-mono text-slate-900 tracking-tight">₹245.00</span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-text-muted space-y-1.5">
-            <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-              <Shield className="w-4 h-4 text-emerald-600" />
+          <div className="p-3.5 rounded-md bg-slate-50 border border-slate-200 text-xs text-text-muted space-y-1.5">
+            <div className="flex items-center gap-1.5 font-medium text-slate-800">
+              <Shield className="w-4 h-4 text-primary" />
               <span>Cooperative Escrow Guarantee</span>
             </div>
-            <p className="leading-relaxed text-[11px]">
+            <p className="leading-relaxed text-[11px] text-slate-600">
               Your funds remain protected in escrow and are only credited to the worker's ledger upon verified completion of the service.
             </p>
             <div className="pt-1 text-[10px] text-slate-500 font-mono">
-              Test Card: <span className="bg-slate-200 px-1 py-0.5 rounded">4111 1111 1111 1111</span>
+              Test Card: <span className="bg-slate-200 px-1 py-0.5 rounded font-mono">4111 1111 1111 1111</span>
             </div>
           </div>
 
           {paidSuccess && (
-            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Payment captured! Worker earnings ledger credited atomically.</span>
             </div>
@@ -120,7 +120,7 @@ export default function CustomerPaymentsPage() {
             type="button"
             disabled={paying}
             onClick={handleTestCheckout}
-            className="w-full py-3 rounded-xl bg-secondary hover:bg-secondary-hover text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-md bg-primary hover:bg-primary-hover text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2"
           >
             <CreditCard className="w-4 h-4" />
             {paying ? 'Processing Razorpay Escrow...' : 'Pay ₹245.00 (Razorpay Test Mode)'}
@@ -128,9 +128,9 @@ export default function CustomerPaymentsPage() {
         </div>
 
         {/* Past Transactions Ledger (7 cols on desktop) */}
-        <div className="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+        <div className="lg:col-span-7 bg-white p-5 sm:p-6 rounded-md border border-slate-200 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="text-xs font-semibold text-slate-800 uppercase tracking-wider flex items-center gap-2">
               <Receipt className="w-4 h-4 text-primary" />
               <span>Past Transactions History</span>
             </div>
@@ -146,10 +146,10 @@ export default function CustomerPaymentsPage() {
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                  className="p-3.5 rounded-md bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                 >
                   <div>
-                    <div className="font-bold text-slate-800 font-mono text-xs sm:text-sm">
+                    <div className="font-semibold text-slate-800 font-mono text-xs sm:text-sm">
                       {tx.gateway_ref}
                     </div>
                     <div className="text-[11px] text-text-muted mt-1 space-x-2">
@@ -160,8 +160,8 @@ export default function CustomerPaymentsPage() {
                   </div>
 
                   <div className="sm:text-right flex sm:flex-col justify-between items-center sm:items-end">
-                    <div className="font-black text-slate-900 text-base">₹{Number(tx.amount).toFixed(2)}</div>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full capitalize">
+                    <div className="font-bold text-slate-900 text-base font-mono">₹{Number(tx.amount).toFixed(2)}</div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded capitalize">
                       <CheckCircle2 className="w-3 h-3" /> {tx.status}
                     </span>
                   </div>

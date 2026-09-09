@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const requestId = crypto.randomUUID();
 
-  // 1. Rate Limiting Check
+  // 1. Rate Limiting Check on API routes
   const clientIp = request.ip || request.headers.get('x-forwarded-for') || '127.0.0.1';
 
   if (pathname.startsWith('/api/v1/auth')) {
@@ -26,22 +26,40 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Extract session / role from cookie or auth header
-  // In Next.js + Supabase Auth with custom claims:
+  // 2. Extract session / role from cookie
   const roleCookie = request.cookies.get('coop_user_role')?.value;
   const userIdCookie = request.cookies.get('coop_user_id')?.value;
+  const isAuthenticated = Boolean(roleCookie && userIdCookie);
 
-  // Clone headers and attach x-request-id + resolved role if present
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-request-id', requestId);
+  // Helper to determine destination for authenticated user
+  const getAuthenticatedRedirectUrl = (role: string | undefined) => {
+    if (role === 'worker') return new URL('/worker/dashboard', request.url);
+    if (role === 'admin') return new URL('/admin/dashboard', request.url);
+    return new URL('/customer/request', request.url);
+  };
 
-  if (roleCookie && userIdCookie) {
-    requestHeaders.set('x-user-id', userIdCookie);
-    requestHeaders.set('x-user-role', roleCookie);
+  // 3. Website Root Path Enforcement (must be logged in to access platform)
+  if (pathname === '/') {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login', request.url);
+      return NextResponse.redirect(loginUrl, 307);
+    }
+    return NextResponse.redirect(getAuthenticatedRedirectUrl(roleCookie), 307);
   }
 
-  // 3. Layer 1 Role Guard (307 redirect away from role-mismatched routes)
+  // 4. Prevent authenticated users from visiting login or signup again
+  if (pathname === '/login' || pathname === '/signup') {
+    if (isAuthenticated) {
+      return NextResponse.redirect(getAuthenticatedRedirectUrl(roleCookie), 307);
+    }
+  }
+
+  // 5. Protected Role Portals - Strict Authentication & RBAC Guard
   if (pathname.startsWith('/admin')) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login?error=login_required', request.url);
+      return NextResponse.redirect(loginUrl, 307);
+    }
     if (roleCookie !== 'admin') {
       const loginUrl = new URL('/login?error=admin_required', request.url);
       return NextResponse.redirect(loginUrl, 307);
@@ -49,6 +67,10 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith('/worker')) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login?error=login_required', request.url);
+      return NextResponse.redirect(loginUrl, 307);
+    }
     if (roleCookie !== 'worker' && roleCookie !== 'admin') {
       const loginUrl = new URL('/login?error=worker_required', request.url);
       return NextResponse.redirect(loginUrl, 307);
@@ -56,10 +78,23 @@ export async function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith('/customer')) {
+    if (!isAuthenticated) {
+      const loginUrl = new URL('/login?error=login_required', request.url);
+      return NextResponse.redirect(loginUrl, 307);
+    }
     if (roleCookie !== 'customer' && roleCookie !== 'admin') {
       const loginUrl = new URL('/login?error=customer_required', request.url);
       return NextResponse.redirect(loginUrl, 307);
     }
+  }
+
+  // 6. Forward headers with request-id and user context
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-request-id', requestId);
+
+  if (isAuthenticated && roleCookie && userIdCookie) {
+    requestHeaders.set('x-user-id', userIdCookie);
+    requestHeaders.set('x-user-role', roleCookie);
   }
 
   const response = NextResponse.next({
@@ -69,15 +104,21 @@ export async function middleware(request: NextRequest) {
   });
 
   response.headers.set('x-request-id', requestId);
+  if (isAuthenticated && roleCookie && userIdCookie) {
+    response.headers.set('x-user-id', userIdCookie);
+    response.headers.set('x-user-role', roleCookie);
+  }
   return response;
 }
 
 export const config = {
   matcher: [
+    '/',
+    '/login',
+    '/signup',
     '/admin/:path*',
     '/worker/:path*',
     '/customer/:path*',
     '/api/v1/:path*',
   ],
 };
-

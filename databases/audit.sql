@@ -29,7 +29,7 @@ begin
       actor_user_id,
       tg_table_name || '.update',
       tg_table_name,
-      coalesce(new.id::text, new.key::text, new.user_id::text, 'unknown'),
+      coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'),
       to_jsonb(old),
       to_jsonb(new)
     );
@@ -46,7 +46,7 @@ begin
       actor_user_id,
       tg_table_name || '.delete',
       tg_table_name,
-      coalesce(old.id::text, old.key::text, old.user_id::text, 'unknown'),
+      coalesce(to_jsonb(old) ->> 'id', to_jsonb(old) ->> 'key', to_jsonb(old) ->> 'user_id', 'unknown'),
       to_jsonb(old),
       null
     );
@@ -63,7 +63,7 @@ begin
       actor_user_id,
       tg_table_name || '.insert',
       tg_table_name,
-      coalesce(new.id::text, new.key::text, new.user_id::text, 'unknown'),
+      coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'),
       null,
       to_jsonb(new)
     );
@@ -104,7 +104,7 @@ begin
       actor_user_id,
       'worker.verify',
       'worker_profiles',
-      new.user_id::text,
+      coalesce(to_jsonb(new) ->> 'user_id', to_jsonb(new) ->> 'id', 'unknown'),
       jsonb_build_object('verification_status', old.verification_status),
       jsonb_build_object('verification_status', new.verification_status)
     );
@@ -117,4 +117,3 @@ drop trigger if exists trg_audit_worker_verification on worker_profiles;
 create trigger trg_audit_worker_verification
   after update on worker_profiles
   for each row execute function audit_worker_verification_func();
-

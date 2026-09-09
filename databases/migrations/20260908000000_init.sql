@@ -1,8 +1,9 @@
 -- Migration: 20260908000000_init.sql
 -- Description: Complete initial schema, triggers, and RLS policies
 
--- 1. Enable PostGIS
+-- 1. Enable PostGIS & PGCrypto (for secure password hashing)
 create extension if not exists postgis;
+create extension if not exists pgcrypto;
 
 -- 2. Create Enums
 do $$ begin
@@ -156,15 +157,15 @@ begin
 
   if (tg_op = 'UPDATE') then
     insert into audit_log (actor_id, action, target_table, target_id, before, after)
-    values (actor_user_id, tg_table_name || '.update', tg_table_name, coalesce(new.id::text, new.key::text, new.user_id::text, 'unknown'), to_jsonb(old), to_jsonb(new));
+    values (actor_user_id, tg_table_name || '.update', tg_table_name, coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'), to_jsonb(old), to_jsonb(new));
     return new;
   elsif (tg_op = 'DELETE') then
     insert into audit_log (actor_id, action, target_table, target_id, before, after)
-    values (actor_user_id, tg_table_name || '.delete', tg_table_name, coalesce(old.id::text, old.key::text, old.user_id::text, 'unknown'), to_jsonb(old), null);
+    values (actor_user_id, tg_table_name || '.delete', tg_table_name, coalesce(to_jsonb(old) ->> 'id', to_jsonb(old) ->> 'key', to_jsonb(old) ->> 'user_id', 'unknown'), to_jsonb(old), null);
     return old;
   elsif (tg_op = 'INSERT') then
     insert into audit_log (actor_id, action, target_table, target_id, before, after)
-    values (actor_user_id, tg_table_name || '.insert', tg_table_name, coalesce(new.id::text, new.key::text, new.user_id::text, 'unknown'), null, to_jsonb(new));
+    values (actor_user_id, tg_table_name || '.insert', tg_table_name, coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'), null, to_jsonb(new));
     return new;
   end if;
   return null;
@@ -200,4 +201,41 @@ drop trigger if exists trg_audit_worker_verification on worker_profiles;
 create trigger trg_audit_worker_verification
   after update on worker_profiles
   for each row execute function audit_worker_verification_func();
+
+-- 7. Automated Synchronization Trigger from Supabase Auth (auth.users) to Public Users
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.users (id, role, full_name, username, phone, address)
+  values (
+    new.id,
+    coalesce((new.raw_user_meta_data->>'role')::user_role, 'customer'::user_role),
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    new.raw_user_meta_data->>'phone',
+    new.raw_user_meta_data->>'address'
+  )
+  on conflict (id) do update set
+    role = excluded.role,
+    full_name = excluded.full_name;
+
+  if (coalesce(new.raw_user_meta_data->>'role', '') = 'worker') then
+    insert into public.worker_profiles (user_id, skill_type, experience_years)
+    values (
+      new.id,
+      coalesce(new.raw_user_meta_data->>'skill_type', 'electrician'),
+      coalesce((new.raw_user_meta_data->>'experience_years')::numeric, 1)
+    )
+    on conflict (user_id) do nothing;
+  end if;
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
 

@@ -68,7 +68,7 @@ export default function WorkerDashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-semibold text-slate-900 tracking-tight">
             Worker Dispatch Console
           </h1>
           <p className="text-xs sm:text-sm text-text-muted mt-0.5">
@@ -76,8 +76,8 @@ export default function WorkerDashboard() {
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold self-start sm:self-auto">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium self-start sm:self-auto">
+          <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
           <span>Online & Receiving Gigs</span>
         </div>
       </div>
@@ -85,29 +85,29 @@ export default function WorkerDashboard() {
       {activeJob ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Job Description, Briefing, Customer Contact (7 cols on desktop) */}
-          <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="lg:col-span-7 bg-white rounded-md border border-slate-200 overflow-hidden">
             {/* Status Header Bar */}
-            <div className="bg-teal-50/80 border-b border-teal-100 px-6 py-3.5 flex items-center justify-between">
-              <span className="text-xs font-bold text-teal-900 uppercase tracking-wider">
+            <div className="bg-slate-50 border-b border-slate-200 px-5 py-3 flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                 {activeJob.service_type} Assignment
               </span>
               <span
-                className={`text-xs font-bold px-3 py-1 rounded-full capitalize ${
+                className={`text-xs font-medium px-2 py-0.5 rounded border capitalize ${
                   activeJob.status === 'completed'
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : activeJob.status === 'in_progress'
-                    ? 'bg-amber-100 text-amber-800'
-                    : 'bg-teal-100 text-teal-800'
+                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200'
                 }`}
               >
                 {activeJob.status.replace('_', ' ')}
               </span>
             </div>
 
-            <div className="p-6 space-y-5">
+            <div className="p-5 sm:p-6 space-y-5">
               {/* Description */}
               <div>
-                <h2 className="font-bold text-slate-900 text-base sm:text-lg">
+                <h2 className="font-semibold text-slate-900 text-base sm:text-lg">
                   {activeJob.description}
                 </h2>
                 <div className="flex items-center gap-2 text-xs sm:text-sm text-text-muted mt-2">
@@ -118,8 +118,8 @@ export default function WorkerDashboard() {
 
               {/* Briefing Card */}
               {activeJob.briefing && (
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs sm:text-sm space-y-1.5">
-                  <div className="flex items-center gap-2 font-bold text-slate-800">
+                <div className="bg-slate-50 border border-slate-200 rounded-md p-4 text-xs sm:text-sm space-y-1.5">
+                  <div className="flex items-center gap-2 font-medium text-slate-800">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Dispatcher Technical Briefing</span>
                   </div>
@@ -129,19 +129,19 @@ export default function WorkerDashboard() {
 
               {/* Customer Contact Card */}
               {activeJob.customer && (
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs sm:text-sm">
+                <div className="flex items-center justify-between p-4 rounded-md bg-slate-50 border border-slate-200 text-xs sm:text-sm">
                   <div>
-                    <div className="text-[10px] text-text-muted uppercase font-bold tracking-wider">
+                    <div className="text-[10px] text-text-muted uppercase font-medium tracking-wider">
                       Client Contact
                     </div>
-                    <div className="font-bold text-slate-800 text-sm sm:text-base mt-0.5">
+                    <div className="font-medium text-slate-900 text-sm sm:text-base mt-0.5">
                       {activeJob.customer.full_name}
                     </div>
                   </div>
                   {activeJob.customer.phone && (
                     <a
                       href={`tel:${activeJob.customer.phone}`}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 text-white font-bold text-xs shadow-sm hover:bg-teal-700 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" /> Call Customer
                     </a>
@@ -153,12 +153,12 @@ export default function WorkerDashboard() {
 
           {/* Right Column: Compensation & Actions (5 cols on desktop) */}
           <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-20">
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5">
+            <div className="p-5 sm:p-6 rounded-md bg-white border border-slate-200 space-y-5">
               <div>
-                <div className="text-xs uppercase font-bold text-text-muted">
+                <div className="text-xs uppercase font-medium text-text-muted">
                   Guaranteed Take-Home Payout
                 </div>
-                <div className="text-3xl font-black text-slate-900 mt-1 font-mono">
+                <div className="text-3xl font-bold text-slate-900 mt-1 font-mono tracking-tight">
                   ₹{activeJob.quoted_amount.toFixed(2)}
                 </div>
                 <div className="flex items-center gap-1.5 text-xs text-emerald-700 mt-2 font-medium">
@@ -174,7 +174,7 @@ export default function WorkerDashboard() {
                     type="button"
                     disabled={updating}
                     onClick={() => handleStatusChange('in_progress')}
-                    className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+                    className="w-full py-2.5 rounded-md bg-primary hover:bg-primary-hover text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors"
                   >
                     <Play className="w-4 h-4 fill-white" /> Start Job (On-Site)
                   </button>
@@ -185,16 +185,16 @@ export default function WorkerDashboard() {
                     type="button"
                     disabled={updating}
                     onClick={() => handleStatusChange('completed')}
-                    className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+                    className="w-full py-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors"
                   >
                     <CheckCircle className="w-4 h-4" /> Mark Completed & Settle
                   </button>
                 )}
 
                 {activeJob.status === 'completed' && (
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center text-xs sm:text-sm text-emerald-800 font-semibold space-y-1">
-                    <div>🎉 Job marked completed!</div>
-                    <div className="text-[11px] text-emerald-700 font-normal">
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-md text-center text-xs sm:text-sm text-emerald-800 font-medium space-y-1">
+                    <div>Job marked completed</div>
+                    <div className="text-[11px] text-emerald-700">
                       Funds have been transferred to your Earnings Ledger.
                     </div>
                   </div>
@@ -204,9 +204,9 @@ export default function WorkerDashboard() {
           </div>
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto p-12 bg-white rounded-3xl border border-dashed border-slate-300 text-center space-y-3">
-          <Clock className="w-10 h-10 text-slate-400 mx-auto" />
-          <h2 className="font-bold text-base text-slate-800">No active assignment</h2>
+        <div className="max-w-2xl mx-auto p-10 bg-white rounded-md border border-dashed border-slate-300 text-center space-y-3">
+          <Clock className="w-9 h-9 text-slate-400 mx-auto" />
+          <h2 className="font-semibold text-base text-slate-800">No active assignment</h2>
           <p className="text-xs text-text-muted max-w-sm mx-auto">
             You are currently online. When a customer nearby requests your skill, it will appear here instantly.
           </p>

@@ -98,24 +98,7 @@ create table if not exists ratings_feedback (
   created_at timestamptz default now()
 );
 
--- 8. Cost Parameters
-create table if not exists cost_parameters (
-  key text primary key,
-  value numeric not null,
-  updated_by uuid references users(id),
-  updated_at timestamptz default now()
-);
-
--- Default Cost Parameters
-insert into cost_parameters (key, value) values
-  ('base_fare', 100),
-  ('per_km_rate', 12),
-  ('experience_multiplier', 5),
-  ('urgency_multiplier', 1.5),
-  ('service_type_default_multiplier', 1.0)
-on conflict (key) do update set value = excluded.value;
-
--- 9. Enterprise Audit Log Table
+-- 8. Enterprise Audit Log Table (defined before triggers & parameters)
 create table if not exists audit_log (
   id uuid primary key default gen_random_uuid(),
   actor_id uuid references users(id),
@@ -127,3 +110,95 @@ create table if not exists audit_log (
   created_at timestamptz default now()
 );
 
+-- 9. Universal Audit Trigger Function (Fixed: JSONB extraction to support any primary key column)
+create or replace function audit_trigger_func()
+returns trigger as $$
+declare
+  actor_user_id uuid;
+begin
+  -- Extract actor from JWT or fallback to null
+  begin
+    actor_user_id := auth.uid();
+  exception
+    when others then
+      actor_user_id := null;
+  end;
+
+  if (tg_op = 'UPDATE') then
+    insert into audit_log (
+      actor_id,
+      action,
+      target_table,
+      target_id,
+      before,
+      after
+    ) values (
+      actor_user_id,
+      tg_table_name || '.update',
+      tg_table_name,
+      coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'),
+      to_jsonb(old),
+      to_jsonb(new)
+    );
+    return new;
+  elsif (tg_op = 'DELETE') then
+    insert into audit_log (
+      actor_id,
+      action,
+      target_table,
+      target_id,
+      before,
+      after
+    ) values (
+      actor_user_id,
+      tg_table_name || '.delete',
+      tg_table_name,
+      coalesce(to_jsonb(old) ->> 'id', to_jsonb(old) ->> 'key', to_jsonb(old) ->> 'user_id', 'unknown'),
+      to_jsonb(old),
+      null
+    );
+    return old;
+  elsif (tg_op = 'INSERT') then
+    insert into audit_log (
+      actor_id,
+      action,
+      target_table,
+      target_id,
+      before,
+      after
+    ) values (
+      actor_user_id,
+      tg_table_name || '.insert',
+      tg_table_name,
+      coalesce(to_jsonb(new) ->> 'id', to_jsonb(new) ->> 'key', to_jsonb(new) ->> 'user_id', 'unknown'),
+      null,
+      to_jsonb(new)
+    );
+    return new;
+  end if;
+  return null;
+end;
+$$ language plpgsql security definer;
+
+-- 10. Cost Parameters
+create table if not exists cost_parameters (
+  key text primary key,
+  value numeric not null,
+  updated_by uuid references users(id),
+  updated_at timestamptz default now()
+);
+
+-- Attach or update trigger on cost_parameters
+drop trigger if exists trg_audit_cost_parameters on cost_parameters;
+create trigger trg_audit_cost_parameters
+  after insert or update or delete on cost_parameters
+  for each row execute function audit_trigger_func();
+
+-- Default Cost Parameters (fires trg_audit_cost_parameters safely without field error)
+insert into cost_parameters (key, value) values
+  ('base_fare', 100),
+  ('per_km_rate', 12),
+  ('experience_multiplier', 5),
+  ('urgency_multiplier', 1.5),
+  ('service_type_default_multiplier', 1.0)
+on conflict (key) do update set value = excluded.value;
