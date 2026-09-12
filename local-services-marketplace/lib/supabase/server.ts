@@ -1,4 +1,5 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseConfig, maskKey } from './config';
 
 // Enforce server-only isolation
 if (typeof window !== 'undefined') {
@@ -6,30 +7,18 @@ if (typeof window !== 'undefined') {
 }
 
 export function createServerClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const rawServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const isPlaceholderServiceKey =
-    !rawServiceKey ||
-    rawServiceKey.includes('your-supabase') ||
-    rawServiceKey === 'placeholder-key';
+  const config = getSupabaseConfig();
 
-  if (isPlaceholderServiceKey && process.env.NODE_ENV !== 'test') {
+  if (!config.hasServiceRoleKey && process.env.NODE_ENV !== 'test') {
     console.warn(
-      '[Supabase Server] Warning: SUPABASE_SERVICE_ROLE_KEY is not set in local-services-marketplace/.env. Privileged operations may be restricted by Row-Level Security (RLS).'
+      `[Supabase Server] Notice: SUPABASE_SERVICE_ROLE_KEY is not configured. Server client is using anon key (${maskKey(config.anonKey)}). Privileged operations will adhere to standard Row-Level Security (RLS).`
     );
   }
 
-  const serviceRoleKey = !isPlaceholderServiceKey
-    ? rawServiceKey
-    : (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-       'placeholder-key');
-
-  return createSupabaseClient(supabaseUrl, serviceRoleKey, {
+  return createSupabaseClient(config.url, config.serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
     },
   });
 }
-

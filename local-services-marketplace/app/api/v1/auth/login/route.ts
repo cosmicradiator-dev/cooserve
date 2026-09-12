@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
 import { userRepository } from '@/lib/repositories/userRepository';
-import { apiSuccess } from '@/lib/http/apiResponse';
 import { handleApiError } from '@/lib/http/errors';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { getSupabaseConfig } from '@/lib/supabase/config';
+import { formatAuthError } from '@/lib/auth/authErrors';
+import { logger } from '@/lib/logger';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -16,34 +17,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = loginSchema.parse(body);
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-    const supabaseAnonKey =
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-      'placeholder-anon-key';
+    const config = getSupabaseConfig();
 
-    if (
-      !supabaseUrl ||
-      supabaseUrl.includes('placeholder') ||
-      supabaseUrl.includes('your-project') ||
-      !supabaseAnonKey ||
-      supabaseAnonKey.includes('placeholder') ||
-      supabaseAnonKey.includes('your-anon')
-    ) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'API_KEY_CONFIG_ERROR',
-            message:
-              'Supabase API key is missing or not configured. Please add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY to local-services-marketplace/.env and restart your dev server.',
-          },
-        },
-        { status: 500 }
-      );
+    if (!config.isConfigured) {
+      const formatted = formatAuthError({
+        code: 'AUTH_GATEWAY_CONFIG_ERROR',
+        message:
+          'Supabase API key is missing or not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables and restart the server.',
+        status: 503,
+      });
+      return NextResponse.json({ error: formatted }, { status: 503 });
     }
 
     // Authenticate with Supabase Auth (verifies bcrypt hashed password on Supabase server)
-    const authClient = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+    const authClient = createSupabaseClient(config.url, config.anonKey, {
       auth: { persistSession: false },
     });
 
@@ -53,19 +40,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError || !authData.user) {
-      const status = authError?.status || 401;
-      let message = authError?.message || 'Invalid email or password';
-      if (authError?.message?.toLowerCase().includes('email not confirmed')) {
-        message = 'Email address has not been confirmed yet. Please verify your email or disable confirmation in Supabase settings.';
-      }
+      logger.warn({
+        msg: 'Sign in failed',
+        email,
+        error: authError?.message,
+        code: authError?.code,
+      });
+
+      const formatted = formatAuthError(authError);
       return NextResponse.json(
-        {
-          error: {
-            code: authError?.code || 'INVALID_CREDENTIALS',
-            message,
-          },
-        },
-        { status }
+        { error: formatted },
+        { status: formatted.status || authError?.status || 401 }
       );
     }
 
