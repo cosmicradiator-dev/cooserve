@@ -102,7 +102,7 @@ export default function CustomerPaymentsPage() {
               <span>Cooperative Escrow Guarantee</span>
             </div>
             <p className="leading-relaxed text-[11px] text-slate-600">
-              Your funds remain protected in escrow and are only credited to the worker's ledger upon verified completion of the service.
+              Your funds remain protected in escrow and are only credited to the worker&apos;s ledger upon verified completion of the service.
             </p>
             <div className="pt-1 text-[10px] text-slate-500 font-mono">
               Test Card: <span className="bg-slate-200 px-1 py-0.5 rounded font-mono">4111 1111 1111 1111</span>

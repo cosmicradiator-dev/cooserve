@@ -273,7 +273,7 @@ export default function CustomerRequestPage() {
                   <span>Fair Trade Cooperative Promise</span>
                 </div>
                 <p className="text-[10px] text-slate-500 leading-relaxed">
-                  Unlike traditional aggregator apps charging 25-30% commissions, this entire quote goes directly into the worker's earnings escrow upon job sign-off.
+                  Unlike traditional aggregator apps charging 25-30% commissions, this entire quote goes directly into the worker&apos;s earnings escrow upon job sign-off.
                 </p>
               </div>
             </div>
