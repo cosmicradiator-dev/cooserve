@@ -13,6 +13,12 @@ export function createServerClient() {
     rawServiceKey.includes('your-supabase') ||
     rawServiceKey === 'placeholder-key';
 
+  if (isPlaceholderServiceKey && process.env.NODE_ENV !== 'test') {
+    console.warn(
+      '[Supabase Server] Warning: SUPABASE_SERVICE_ROLE_KEY is not set in local-services-marketplace/.env. Privileged operations may be restricted by Row-Level Security (RLS).'
+    );
+  }
+
   const serviceRoleKey = !isPlaceholderServiceKey
     ? rawServiceKey
     : (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||

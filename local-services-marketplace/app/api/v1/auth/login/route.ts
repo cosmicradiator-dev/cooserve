@@ -22,6 +22,26 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
       'placeholder-anon-key';
 
+    if (
+      !supabaseUrl ||
+      supabaseUrl.includes('placeholder') ||
+      supabaseUrl.includes('your-project') ||
+      !supabaseAnonKey ||
+      supabaseAnonKey.includes('placeholder') ||
+      supabaseAnonKey.includes('your-anon')
+    ) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'API_KEY_CONFIG_ERROR',
+            message:
+              'Supabase API key is missing or not configured. Please add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY to local-services-marketplace/.env and restart your dev server.',
+          },
+        },
+        { status: 500 }
+      );
+    }
+
     // Authenticate with Supabase Auth (verifies bcrypt hashed password on Supabase server)
     const authClient = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
